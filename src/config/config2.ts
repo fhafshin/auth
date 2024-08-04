@@ -14,9 +14,9 @@ const DbConfig = registerAs(configKeys.Db, () => ({
   type: 'postgres',
   username: 'postgres',
   password: '123456',
-  synchronized: true,
   host: 'localhost',
   database: 'auth',
+  entities: ['dist/**/**/**/*.entity.{ts,js}', 'dist/**/**/*.entity.{ts,js}'],
 }));
 
 export const configurations = [AppConfig, DbConfig];

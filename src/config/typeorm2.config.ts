@@ -12,7 +12,12 @@ export class TypeOrmDbConfig2 implements TypeOrmOptionsFactory {
       database: this.configService.get('Db.database'),
       username: this.configService.get('Db.username'),
       password: this.configService.get('Db.password'),
-      synchronize: this.configService.get('Db.synchronize'),
+      synchronize: true,
+      autoLoadEntities: false,
+      entities: [
+        'dist/**/**/**/*.entity{.ts,.js}',
+        'dist/**/**/*.entity{.ts,.js}',
+      ],
     };
   }
 }
