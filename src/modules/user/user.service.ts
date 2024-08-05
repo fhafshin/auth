@@ -9,8 +9,4 @@ export class UserService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
   ) {}
-
-  findAll() {
-    return this.userRepository.find({});
-  }
 }

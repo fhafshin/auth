@@ -3,6 +3,7 @@ import { CustomConfigsModule2 } from './modules/config/config2.module';
 import { UserModule } from './modules/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmDbConfig2 } from './config/typeorm2.config';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { TypeOrmDbConfig2 } from './config/typeorm2.config';
       inject: [TypeOrmDbConfig2],
     }),
     UserModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [TypeOrmDbConfig2],
