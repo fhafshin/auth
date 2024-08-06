@@ -1,9 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { OtpEntity } from '../user/entity/otp.entity';
-import { SendOtpDto } from './dto/auth.dto';
+import { CheckOtpDto, SendOtpDto } from './dto/auth.dto';
 import { randomInt } from 'crypto';
 
 @Injectable()
@@ -14,12 +18,15 @@ export class AuthService {
     @InjectRepository(OtpEntity) private otpRepository: Repository<OtpEntity>,
   ) {}
 
-  async createOtpForUser(user: UserEntity) {
+  private async createOtpForUser(user: UserEntity) {
     const expires_In = new Date(new Date().getTime() + 1000 * 60 * 2);
     const code = String(randomInt(10000, 99999));
 
     let otp = await this.otpRepository.findOneBy({ userId: user.id });
     if (otp) {
+      if (otp.expires_In > new Date()) {
+        throw new BadRequestException('otp code not expires time');
+      }
       otp.code = code;
       otp.expires_In = expires_In;
     } else {
@@ -43,5 +50,34 @@ export class AuthService {
       user = await this.userRepository.save(user);
     }
     await this.createOtpForUser(user);
+    return {
+      message: 'successfully',
+    };
+  }
+
+  async checkOtp(data: CheckOtpDto) {
+    const { code, mobile } = data;
+    const user = await this.userRepository.findOne({
+      where: { mobile },
+      relations: { otp: true },
+    });
+
+    const now = new Date();
+    if (!user || !user?.otp)
+      throw new UnauthorizedException('not found account');
+
+    const otp = user.otp;
+    if (otp?.code !== code)
+      throw new UnauthorizedException('otp code is incorrect');
+
+    if (otp.expires_In < now)
+      throw new UnauthorizedException('otp code is expired');
+
+    if (user.mobile_verify) {
+      user.mobile_verify = true;
+      await this.userRepository.save(user);
+    }
+
+    return { message: 'you logged-in successfully' };
   }
 }

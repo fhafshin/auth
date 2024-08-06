@@ -1,10 +1,17 @@
-import { Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+import { CheckOtpDto, SendOtpDto } from './dto/auth.dto';
+import { AuthService } from './auth.service';
 
 @Controller('/auth')
 export class AuthController {
+  constructor(private readonly authService: AuthService) {}
   @Post('/send-otp')
-  sendOtp() {}
+  sendOtp(@Body() data: SendOtpDto) {
+    return this.authService.sendOtp(data);
+  }
 
   @Post('/check-otp')
-  checkOtp() {}
+  checkOtp(@Body() data: CheckOtpDto) {
+    return this.authService.checkOtp(data);
+  }
 }
