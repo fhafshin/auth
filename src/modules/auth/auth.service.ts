@@ -9,6 +9,9 @@ import { Repository } from 'typeorm';
 import { OtpEntity } from '../user/entity/otp.entity';
 import { CheckOtpDto, SendOtpDto } from './dto/auth.dto';
 import { randomInt } from 'crypto';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { TokenPayload } from './types/payload';
 
 @Injectable()
 export class AuthService {
@@ -16,6 +19,8 @@ export class AuthService {
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
     @InjectRepository(OtpEntity) private otpRepository: Repository<OtpEntity>,
+    private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   private async createOtpForUser(user: UserEntity) {
@@ -49,6 +54,8 @@ export class AuthService {
       user = this.userRepository.create({ mobile });
       user = await this.userRepository.save(user);
     }
+    if (user.mobile_verify)
+      throw new BadRequestException('mobile is verified after');
     await this.createOtpForUser(user);
     return {
       message: 'successfully',
@@ -73,11 +80,29 @@ export class AuthService {
     if (otp.expires_In < now)
       throw new UnauthorizedException('otp code is expired');
 
-    if (user.mobile_verify) {
+    if (!user.mobile_verify) {
       user.mobile_verify = true;
       await this.userRepository.save(user);
     }
+    const payload: TokenPayload = { mobile, id: user.id };
+    const { accessToken, refreshToken } = this.makeTokensOfUser(payload);
 
-    return { message: 'you logged-in successfully' };
+    return { accessToken, refreshToken, message: 'you logged-in successfully' };
+  }
+
+  private makeTokensOfUser(payload: TokenPayload) {
+    const accessToken = this.jwtService.sign(payload, {
+      secret: this.configService.get('Jwt.accessTokenJwt'),
+      expiresIn: '3d',
+    });
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: this.configService.get('Jwt.accessTokenJwt'),
+      expiresIn: '1d',
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 }
