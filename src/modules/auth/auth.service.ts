@@ -61,7 +61,6 @@ export class AuthService {
       message: 'successfully',
     };
   }
-
   async checkOtp(data: CheckOtpDto) {
     const { code, mobile } = data;
     const user = await this.userRepository.findOne({
@@ -104,5 +103,25 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async validateAccessToken(token: string) {
+    try {
+      const payload = this.jwtService.verify<TokenPayload>(token, {
+        secret: this.configService.get('Jwt.accessTokenJwt'),
+      });
+      if (Object.is(typeof payload, 'object') && payload?.id) {
+        const user = this.userRepository.findOneBy({
+          id: payload.id,
+        });
+        if (!user) {
+          throw new UnauthorizedException('login on your account3');
+        }
+        return user;
+      }
+      throw new UnauthorizedException('login on your account4');
+    } catch (error) {
+      throw new UnauthorizedException('login on your account5');
+    }
   }
 }
