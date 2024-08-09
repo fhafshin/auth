@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { OtpEntity } from '../user/entity/otp.entity';
-import { CheckOtpDto, SendOtpDto } from './dto/auth.dto';
+import { CheckOtpDto, SendOtpDto } from './dto/otp.dto';
 import { randomInt } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';

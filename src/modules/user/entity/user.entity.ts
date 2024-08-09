@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -18,7 +17,11 @@ export class UserEntity {
   first_name: string;
   @Column({ nullable: true })
   last_name: string;
-  @Column()
+  @Column({ nullable: true })
+  email: string;
+  @Column({ nullable: true })
+  password: string;
+  @Column({ nullable: true })
   mobile: string;
   @Column({ default: false })
   mobile_verify: boolean;
